@@ -1,37 +1,64 @@
 require "jekyll-less/version"
+require 'less'
 
 module Jekyll
   module Less
-    class LessConverter < Converter
-      pygments_prefix "\n"
-      pygments_suffix "\n"
 
-      def setup
-        return if @setup
-        require 'less'
-        @setup = true
-      rescue LoadError
-        STDERR.puts 'You are missing a library required for less. Please run:'
-        STDERR.puts '  $ [sudo] gem install less'
-        raise FatalException.new("Missing dependency: less")
+    class LessCssFile < Jekyll::StaticFile
+
+      # Obtain destination path.
+      #   +dest+ is the String path to the destination dir
+      #
+      # Returns destination file path.
+      def destination(dest)
+        File.join(dest, @dir, @name.sub(/less$/, 'css'))
       end
 
-      def matches(ext)
-        ext =~ /less/i
-      end
+      # Convert the less file into a css file.
+      #   +dest+ is the String path to the destination dir
+      #
+      # Returns false if the file was not modified since last time (no-op).
+      def write(dest)
+        dest_path = destination(dest)
+        
+        return false if File.exist? dest_path and !modified?
+        @@mtimes[path] = mtime
 
-      def output_ext(ext)
-        ".css"
-      end
-
-      def convert(content)
-        setup
+        FileUtils.mkdir_p(File.dirname(dest_path))
         begin
-          ::Less::Parser.new().parse(content).to_css
+          content = File.read(path)
+          content = ::Less::Parser.new().parse(content).to_css
+          File.open(dest_path, 'w') do |f|
+            f.write(content)
+          end
         rescue => e
-          puts "Less Exception: #{e.message}"
+          STDERR.puts "Less Exception: #{e.message}"
+        end
+
+        true
+      end
+
+    end
+
+    class LessCssGenerator < Jekyll::Generator
+      safe true
+
+      # Jekyll will have already added the *.less files as Jekyll::StaticFile
+      # objects to the static_files array.  Here we replace those with a
+      # LessCssFile object.
+      def generate(site)
+        STDERR.puts('LessCssGenerator::generate')
+        site.static_files.each do |sf|
+          if sf.kind_of?(Jekyll::StaticFile) && sf.path =~ /\.less$/
+            STDERR.puts("found a less file: #{sf.path}")
+            site.static_files.delete(sf)
+            name = File.basename(sf.path)
+            destination = File.dirname(sf.path).sub(site.source, '')
+            site.static_files << LessCssFile.new(site, site.source, destination, name)
+          end
         end
       end
     end
+
   end
 end
