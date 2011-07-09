@@ -47,10 +47,8 @@ module Jekyll
       # objects to the static_files array.  Here we replace those with a
       # LessCssFile object.
       def generate(site)
-        STDERR.puts('LessCssGenerator::generate')
         site.static_files.each do |sf|
           if sf.kind_of?(Jekyll::StaticFile) && sf.path =~ /\.less$/
-            STDERR.puts("found a less file: #{sf.path}")
             site.static_files.delete(sf)
             name = File.basename(sf.path)
             destination = File.dirname(sf.path).sub(site.source, '')
