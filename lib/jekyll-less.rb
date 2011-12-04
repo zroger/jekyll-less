@@ -27,7 +27,7 @@ module Jekyll
         FileUtils.mkdir_p(File.dirname(dest_path))
         begin
           content = File.read(path)
-          content = ::Less::Parser.new().parse(content).to_css
+          content = ::Less::Parser.new({:paths => [File.dirname(path)]}).parse(content).to_css
           File.open(dest_path, 'w') do |f|
             f.write(content)
           end
