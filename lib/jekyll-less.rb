@@ -47,7 +47,7 @@ module Jekyll
       # objects to the static_files array.  Here we replace those with a
       # LessCssFile object.
       def generate(site)
-        site.static_files.each do |sf|
+        site.static_files.clone.each do |sf|
           if sf.kind_of?(Jekyll::StaticFile) && sf.path =~ /\.less$/
             site.static_files.delete(sf)
             name = File.basename(sf.path)
