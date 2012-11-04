@@ -44,11 +44,7 @@ module Jekyll
     class LessCssGenerator < Jekyll::Generator
       safe true
 
-      # Initialize a new plugin. This should be overridden by the subclass.
-      #
-      # config - The Hash of configuration options.
-      #
-      # Returns a new instance.
+      # Initialize options from site config.
       def initialize(config = {})
         @options = {"compress" => true}.merge(config["less"] ||= {})
       end
