@@ -5,6 +5,7 @@ module Jekyll
   module Less
 
     class LessCssFile < Jekyll::StaticFile
+      attr_accessor :compress
 
       # Obtain destination path.
       #   +dest+ is the String path to the destination dir
@@ -20,14 +21,14 @@ module Jekyll
       # Returns false if the file was not modified since last time (no-op).
       def write(dest)
         dest_path = destination(dest)
-        
+
         return false if File.exist? dest_path and !modified?
         @@mtimes[path] = mtime
 
         FileUtils.mkdir_p(File.dirname(dest_path))
         begin
           content = File.read(path)
-          content = ::Less::Parser.new({:paths => [File.dirname(path)]}).parse(content).to_css :compress => true
+          content = ::Less::Parser.new({:paths => [File.dirname(path)]}).parse(content).to_css :compress => compress
           File.open(dest_path, 'w') do |f|
             f.write(content)
           end
@@ -43,6 +44,15 @@ module Jekyll
     class LessCssGenerator < Jekyll::Generator
       safe true
 
+      # Initialize a new plugin. This should be overridden by the subclass.
+      #
+      # config - The Hash of configuration options.
+      #
+      # Returns a new instance.
+      def initialize(config = {})
+        @options = {"compress" => true}.merge(config["less"] ||= {})
+      end
+
       # Jekyll will have already added the *.less files as Jekyll::StaticFile
       # objects to the static_files array.  Here we replace those with a
       # LessCssFile object.
@@ -52,7 +62,10 @@ module Jekyll
             site.static_files.delete(sf)
             name = File.basename(sf.path)
             destination = File.dirname(sf.path).sub(site.source, '')
-            site.static_files << LessCssFile.new(site, site.source, destination, name)
+
+            less_file = LessCssFile.new(site, site.source, destination, name)
+            less_file.compress = @options["compress"]
+            site.static_files << less_file
           end
         end
       end
