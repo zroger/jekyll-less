@@ -46,7 +46,7 @@ module Jekyll
 
       # Initialize options from site config.
       def initialize(config = {})
-        @options = {"compress" => true}.merge(config["less"] ||= {})
+        @options = config["less"] ||= {"compress" => true}
       end
 
       # Jekyll will have already added the *.less files as Jekyll::StaticFile
