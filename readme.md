@@ -15,6 +15,10 @@ In a plugin file within your Jekyll project's _plugins directory:
     # _plugins/my-plugin.rb
     require "jekyll-less"
 
+Alternatively, add a configuration option in `_config.yml`:
+
+    gems: ['jekyll-less']
+
 Place .less files anywhere in your Jekyll project's directory.  These will be
 converted to .css files with the same directory path and filename. For example,
 if you create a Less file at _css/my-stuff/styles.less_, then the corresponding
